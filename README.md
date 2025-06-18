@@ -4,7 +4,7 @@ Python client for [Jedox](https://www.jedox.com/).
 * Uses the HTTP/1.1 OLAP API of Jedox.
 * Cloud-compatible
 
-* This is still a beta version. I've been working alone on the project, and this is my very first Python project so I'm open for criticism :-). I know Jedox very well, and Python a bit
+* This is still a beta version of the beta version. I've been working alone on the project, and this is my very first Python project so I'm open for criticism and advice. Feel free to contribute!
 
 ## Usage
 
