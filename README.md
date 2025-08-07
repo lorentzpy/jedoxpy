@@ -21,7 +21,7 @@ All trademarks and brand names mentioned are the property of their respective ow
 Basic call
 ```
 from JedoxPy import JedoxService
-host = "localhost" # or any cloud olap address
+host = "localhost" # or any cloud olap address, e.g olap.myinstance.cloud.jedox.xom
 port = 7777
 username = admin
 password = admin
@@ -38,5 +38,6 @@ with JedoxService(host=host, port=port, username=user, password=password, ssl=ss
     database = js.databases.get(name="Demo") # returns a Database object
     cubes = js.databases.get_cubes(database=database) # returns a list of Cube objects
 ```
+
 
 
