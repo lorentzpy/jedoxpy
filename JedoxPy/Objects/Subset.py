@@ -78,7 +78,7 @@ class HierarchyFilter(Filter):
         revolve_name=""
 
         flag = self.generate_flag_string()
-        element_string = self.element
+        element_string = self.element if self.element is not None else ""
 
         view_subset = f"{HIERARCHY_FILTER};{flag};1;\"{element_string}\";{(self.level_from or "")};{(self.level_to or "")};{revolve_count};{revolve_name}"
 

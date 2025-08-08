@@ -17,7 +17,9 @@ class Element:
                 f"Type: {self.type.name}")
 
     def __repr__(self):
-        pass
+        return (f"Element(name={self.name},"
+                f"Id={self.id},"
+                f"Type={self.type.name})")
 
     @classmethod
     def from_dict(cls, element_as_dict) -> 'Element':

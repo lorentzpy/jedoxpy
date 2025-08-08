@@ -77,11 +77,18 @@ class ConnectionService:
         self.username = kwargs.get("username", None)
         self.password = kwargs.get("password", None)
         self.debug = kwargs.get("debug", False)
+        self.ssl = kwargs.get("ssl", True)
 
         url_prefix = "http"
-        if kwargs.get("ssl", True):
+        if self.port is None:
+            port = 80
+
+        if self.ssl:
             url_prefix = f"{url_prefix}s"
-        self.root_url = f"{url_prefix}://{self.host}:{self.port}"
+            if self.port is None:
+                port = 443
+
+        self.root_url = f"{url_prefix}://{self.host}:{port}"
 
         self.session_id = None
 

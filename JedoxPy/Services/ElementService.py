@@ -1,7 +1,7 @@
 from JedoxPy.Services.ConnectionService import ConnectionService
 from JedoxPy.Services.SubsetService import SubsetService
 from JedoxPy.Services.CubeService import CubeService
-#from JedoxPy.Services.SubcubeService import SubcubeService
+from JedoxPy.Objects.Element import Element
 
 
 from JedoxPy.Objects.Database import Database
@@ -33,7 +33,7 @@ class ElementService:
 
         self._connection = connection
 
-    def get_by_name(self, dimension: Dimension, element: str):
+    def get_by_name(self, dimension: Dimension, element: str) -> Element:
         service_method = "/element/info"
         payload = dict()
         payload["database"] = dimension.database.id
@@ -53,7 +53,7 @@ class ElementService:
             error_msg = f"Element {element} not found in dimension {dimension.name}"
             raise JedoxPyNotFoundException(error_code=e.error_code, custom_message=error_msg)
 
-    def get_by_id(self, dimension: Dimension, element: int):
+    def get_by_id(self, dimension: Dimension, element: int) -> Element:
 
         try:
             service_method = "/element/info"
@@ -84,7 +84,7 @@ class ElementService:
 
         return False
 
-    def get_base_elements(self, dimension: Dimension, element: str) -> dict:
+    def get_base_elements(self, dimension: Dimension, element: str = None) -> dict:
 
         try:
             subset_service = SubsetService(connection=self._connection)
@@ -304,7 +304,6 @@ class ElementService:
         return df
 
     def create_or_update(self,
-                         database: Database,
                          dimension: Dimension,
                          name: str,
                          type: TypeElement,
@@ -313,7 +312,7 @@ class ElementService:
                          ignore_type_change=True):
 
         payload = dict()
-        payload["database"] = database.id
+        payload["database"] = dimension.database.id
         payload["dimension"] = dimension.id
         payload["name_element"] = name
         payload["type"] = type.value
@@ -324,14 +323,17 @@ class ElementService:
                 element_obj = self.get_by_name(dimension=dimension, element=name)
                 element_type = element_obj.type
                 if element_type != type:
-                    raise JedoxPyException(f"Element {name} already exist as type {element_type}")
+                    raise JedoxPyException(f"Element {name} already exists as type {element_type}")
 
         if type == TypeElement.CONSOLIDATED:
+            if children is None:
+                raise JedoxPyException(error_msg=f"Children must be specified for a consolidated element")
+
             payload["name_children"] = ",".join(children)
 
             if weights is not None:
                 if len(weights) != len(children):
-                    raise JedoxPyException(f"Weights list must be same length as children list")
+                    raise JedoxPyException(error_msg=f"Weights list must be same length as children list")
 
                 payload["weights"] = ",".join(map(str, weights))
 
@@ -350,11 +352,11 @@ class ElementService:
             payload["database"] = dimension.database.id
             payload["dimension"] = dimension.id
             payload["new_name"] = element_name
-            payload["type"] = TypeElement.NUMERIC.value
+            payload["type"] = element_type.value
 
             conn.request(service_method=service_method, payload=payload, header=False)
 
-        except JedoxPyException as e:
+        except JedoxPyAlreadyExistsException as e:
             error_msg = f"Element {element_name} already exists in dimension {dimension.name}"
             raise JedoxPyException(error_code=e.error_code, error_msg=error_msg)
 
@@ -393,9 +395,9 @@ class ElementService:
         if element_load_mode == DimensionLoadModes.UPDATE:
             pass
 
-        payload["name_elements"] = name_elements
-        payload["types"] = type_elements
-
-        # load elements
-        req = self._connection.request(service_method="/element/create_bulk",payload=payload, header=False)
+        # payload["name_elements"] = name_elements
+        # payload["types"] = type_elements
+        #
+        # # load elements
+        # req = self._connection.request(service_method="/element/create_bulk",payload=payload, header=False)
 

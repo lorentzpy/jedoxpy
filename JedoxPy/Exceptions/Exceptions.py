@@ -1,10 +1,11 @@
 class JedoxPyException(Exception):
 
-    def __init__(self, error_code: int, error_msg: str, param = None):
+    def __init__(self, error_code: int = None, error_msg: str=None, param = None):
         self.error_code = error_code
         self.error_msg = error_msg
         self.param = param
-        msg = f"[{error_code}] {error_msg}"
+        err = f"[{error_code}] " if error_code else ""
+        msg = f"{err}{error_msg}"
         msg += f"({param})" if param is not None else ""
         super().__init__(msg)
 
