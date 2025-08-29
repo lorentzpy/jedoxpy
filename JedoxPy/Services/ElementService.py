@@ -12,6 +12,8 @@ from JedoxPy.Objects.Enums import TypeElement, HierarchyFilterTypes, SortingCrit
 
 from JedoxPy.Exceptions.Exceptions import JedoxPyNotFoundException, JedoxPyAlreadyExistsException, JedoxPyException
 
+from typing import List
+
 import string
 import random
 
@@ -75,14 +77,16 @@ class ElementService:
             raise JedoxPyNotFoundException(error_code=e.error_code, custom_message=error_msg)
 
     # still needed ?
-    def exists(self, dimension: Dimension, element: str):
+    def exists(self, dimension: Dimension, element: str) -> bool:
 
-        elements = self.get_by_name(dimension=dimension, element=element)
+        try:
+            element = self.get_by_name(dimension=dimension, element=element)
 
-        if element in elements:
-            return True
+            if isinstance(element, Element):
+                return True
 
-        return False
+        except JedoxPyNotFoundException:
+            return False
 
     def get_base_elements(self, dimension: Dimension, element: str = None) -> dict:
 
@@ -328,6 +332,11 @@ class ElementService:
         if type == TypeElement.CONSOLIDATED:
             if children is None:
                 raise JedoxPyException(error_msg=f"Children must be specified for a consolidated element")
+            
+            # check if every child exists
+            for child in children:
+                if not self.exists(dimension=dimension, element=child):
+                    raise JedoxPyException(error_msg=f"Element {child} in the children list does not exist in dimension {dimension.name}")
 
             payload["name_children"] = ",".join(children)
 
@@ -360,9 +369,28 @@ class ElementService:
             error_msg = f"Element {element_name} already exists in dimension {dimension.name}"
             raise JedoxPyException(error_code=e.error_code, error_msg=error_msg)
 
+    def append_to_node(self, dimension: Dimension, node_name: str, child_name: str, weight: int = 1):
+        try:
+            conn = self._connection
+            service_method = "/element/append"
+            payload = dict()
+            payload["database"] = dimension.database.id
+            payload["dimension"] = dimension.id
+            payload["name_element"] = node_name
+            payload["name_children"] = child_name
+            payload["weights"] = weight
+
+            conn.request(service_method=service_method, payload=payload, header=False)
+
+            # get updated element
+            return self.get_by_name(dimension=dimension, element=node_name)
+
+        except:
+            raise JedoxPyException
+
     # def write_elements_dataframe(self, dimension: Dimension, df: 'pd.DataFrame', parent_column: str= "parent", child_column: str= "child", element_load_mode: DimensionLoadModes=DimensionLoadModes.ADD ):
     # data : list of tuples with parent, child
-    def write_elements(self, dimension: Dimension, pc_data: list, element_load_mode: DimensionLoadModes=DimensionLoadModes.ADD ):
+    def write_elements(self, dimension: Dimension, pc_data: List[tuple], element_load_mode: DimensionLoadModes=DimensionLoadModes.ADD ):
 
         #from JedoxPy.Services.DimensionService import DimensionService
 
@@ -394,6 +422,9 @@ class ElementService:
 
         if element_load_mode == DimensionLoadModes.UPDATE:
             pass
+
+        if element_load_mode == DimensionLoadModes.ADD:
+           self.create_or_update()
 
         # payload["name_elements"] = name_elements
         # payload["types"] = type_elements

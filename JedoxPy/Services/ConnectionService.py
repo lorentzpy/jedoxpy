@@ -17,8 +17,8 @@ def check_response(response: Response):
         header_error = ["error_code", "error_message", "error_message_alt", "param_name"]
         error_dict = dict(zip(header_error, error_values))
 
-        print("error_values:", error_values)
-        print("error_dict:", error_dict)
+        # print("error_values:", error_values)
+        # print("error_dict:", error_dict)
 
         try:
             error_code = int(error_dict.get("error_code"))
@@ -80,21 +80,21 @@ class ConnectionService:
         self.ssl = kwargs.get("ssl", True)
 
         url_prefix = "http"
-        if self.port is None:
-            port = 80
-
         if self.ssl:
             url_prefix = f"{url_prefix}s"
             if self.port is None:
-                port = 443
+                self.port = 443
+        else:
+            if self.port is None:
+                self.port = 80
 
-        self.root_url = f"{url_prefix}://{self.host}:{port}"
+        self.root_url = f"{url_prefix}://{self.host}:{self.port}"
 
         self.session_id = None
 
         self.locale = kwargs.get("locale", None)
 
-        self.connect(username=self.username, password=self.password, external_identifier=self.locale)
+        #self.connect(username=self.username, password=self.password, external_identifier=self.locale)
 
     def __str__(self):
 
@@ -103,7 +103,7 @@ class ConnectionService:
         else:
             return f"Connection established, sid: {self.session_id}"
 
-    def connect(self, username: str, password: str, external_identifier: str = None):
+    def connect(self, external_identifier: str = None):
         """ Connects to a Jedox server
 
         :param username
@@ -114,8 +114,8 @@ class ConnectionService:
 
         try:
             payload = dict()
-            payload["user"] = username
-            payload["extern_password"] = password
+            payload["user"] = self.username
+            payload["extern_password"] = self.password
 
             payload["external_identifier"] = external_identifier
 
@@ -126,12 +126,17 @@ class ConnectionService:
         except JedoxPyRequestException as e:
             raise
 
-    def disconnect(self):
+    def disconnect(self, sid=None):
 
         try:
             # /server/logout event
             payload = dict()
-            payload["sid"] = self.session_id
+            if sid is not None:
+                payload["sid"] = sid
+            else:
+                payload["sid"] = self.session_id
+            payload["sid"] = sid
+
             result = self.request(service_method="/server/logout", payload=payload, header=True)
 
         except JedoxPyRequestException:
@@ -176,6 +181,10 @@ class ConnectionService:
 
         except JedoxPyRequestException as e:
             raise
+
+    def get_session_id(self):
+
+        return self.session_id;
 
     def get_databases(self,
                       show_normal: bool = True,

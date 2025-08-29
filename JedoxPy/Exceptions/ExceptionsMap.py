@@ -3,7 +3,7 @@ from JedoxPy.Exceptions.Exceptions import (JedoxPyAlreadyExistsException,
                                            JedoxPyInvalidNameException,
                                            JedoxPyNotDeletableException,
                                            JedoxPyNotRenamableException,
-                                           JedoxPyNotChangableException)
+                                           JedoxPyNotChangeableException)
 
 # manage not found / already exists / invalid name / not alterable exceptions related to objects
 OBJECTS_EXCEPT_MAP = {
@@ -28,7 +28,7 @@ OBJECTS_EXCEPT_MAP = {
                 5010: ("cube", JedoxPyNotRenamableException),
                 3008: ("dimension", JedoxPyNotRenamableException),
                 4011: ("cube", JedoxPyNotRenamableException),
-                3004: ("dimension", JedoxPyNotChangableException),
-                4012: ("element", JedoxPyNotChangableException),
-                5010: ("cube", JedoxPyNotChangableException)
+                3004: ("dimension", JedoxPyNotChangeableException),
+                4012: ("element", JedoxPyNotChangeableException),
+                5010: ("cube", JedoxPyNotChangeableException)
             }

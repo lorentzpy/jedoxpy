@@ -92,7 +92,7 @@ class JedoxPyDimensionErrorException(JedoxPyException):
         super().__init__(error_code=error_code, error_msg=error_msg, param=param_info)
 
 
-class JedoxPyNotChangableException(JedoxPyException):
+class JedoxPyNotChangeableException(JedoxPyException):
 
     def __init__(self, jedox_object_type, jedox_object, error_code, message=None):
         self.jedox_object_type = jedox_object_type

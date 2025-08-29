@@ -68,7 +68,7 @@ class DatabaseService:
 
             return renamed_database
 
-        except JedoxPyNotChangableException:
+        except JedoxPyNotChangeableException:
             raise
 
     def delete(self, database: Database) -> bool:
