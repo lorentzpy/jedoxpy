@@ -30,6 +30,14 @@ ssl = False
 with JedoxService(host=host, port=port, username=user, password=password, ssl=ssl) as js:
     version = js.connection.get_version()
     print(version)
+
+# or without with:
+js = JedoxService(host=host, port=port, username=user, password=password, ssl=ssl)
+
+js.connect()
+version = js.connection.get_version()
+print(version)
+js.disconnect()
 ```
 
 List cubes
@@ -38,6 +46,7 @@ with JedoxService(host=host, port=port, username=user, password=password, ssl=ss
     database = js.databases.get(name="Demo") # returns a Database object
     cubes = js.databases.get_cubes(database=database) # returns a list of Cube objects
 ```
+
 
 
 
