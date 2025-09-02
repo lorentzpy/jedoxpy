@@ -13,6 +13,7 @@ class JedoxService:
 
     def __init__(self, **kwargs):
         self.connection = ConnectionService(**kwargs)
+        self._is_external_session = self.connection.session_id is not None
 
         # alias for connection service
         self.server = None
@@ -50,6 +51,10 @@ class JedoxService:
 
 
     def __enter__(self):
+
+        if self._is_external_session:
+            raise RuntimeError("Cannot use context manager with an external session, this would disconnect the user. Use the connect() and disconnect() methods instead.")
+
         self.connect()
         return self
 

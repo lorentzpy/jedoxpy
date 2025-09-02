@@ -104,3 +104,7 @@ class JedoxPyAuthorizationException(JedoxPyException):
 
     def __init__(self, error_code, error_msg, param_info):
         super().__init__(error_code=error_code, error_msg=error_msg, param=param_info)
+
+class JedoxPyServerNotReachable(JedoxPyException):
+    def __init__(self, error_code, error_msg, param_info):
+        super().__init__(error_code=404, error_msg="Server is not reachable", param=None)

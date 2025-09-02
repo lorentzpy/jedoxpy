@@ -13,6 +13,9 @@ def check_response(response: Response):
 
     if not response.ok:
 
+        if response.status_code == 404:
+            raise JedoxPyServerNotReachable(error_code=404, error_msg="Server is not reachable", param_info=None)
+
         error_values = CSVParser.parse(csv_data=response.text, header=False)
         header_error = ["error_code", "error_message", "error_message_alt", "param_name"]
         error_dict = dict(zip(header_error, error_values))
@@ -39,14 +42,16 @@ def check_response(response: Response):
             "#_ROLE_":"Role"
         }
 
-        match_alternate = re.search(r"element '(.*)' cannot be deleted from (.*)", error_dict["error_message_alt"])
+
 
         if error_code in OBJECTS_EXCEPT_MAP:
 
             obj_type, exception_class = OBJECTS_EXCEPT_MAP.get(error_code, None)
-            if match_alternate:
-                object_name = match_alternate.group(1)
-                obj_type = DIM_OBJECT_MAP[match_alternate.group(2)]
+            if error_dict["error_message_alt"] is not None:
+                match_alternate = re.search(r"element '(.*)' cannot be deleted from (.*)", error_dict["error_message_alt"])
+                if match_alternate:
+                    object_name = match_alternate.group(1)
+                    obj_type = DIM_OBJECT_MAP[match_alternate.group(2)]
 
             raise exception_class(jedox_object_type=obj_type,
                                   jedox_object=param,
@@ -78,6 +83,7 @@ class ConnectionService:
         self.password = kwargs.get("password", None)
         self.debug = kwargs.get("debug", False)
         self.ssl = kwargs.get("ssl", True)
+        self.session_id = kwargs.get("sid", None)
 
         url_prefix = "http"
         if self.ssl:
@@ -90,11 +96,9 @@ class ConnectionService:
 
         self.root_url = f"{url_prefix}://{self.host}:{self.port}"
 
-        self.session_id = None
+        #self.session_id = None
 
         self.locale = kwargs.get("locale", None)
-
-        #self.connect(username=self.username, password=self.password, external_identifier=self.locale)
 
     def __str__(self):
 
@@ -111,6 +115,12 @@ class ConnectionService:
         :param password: str
         :return: None
         """
+
+        # don't reconnect if a session id has been provided
+        if self.session_id is not None:
+            if self.debug:
+                print(f"Using provided session id: {self.session_id}")
+            return
 
         try:
             payload = dict()
