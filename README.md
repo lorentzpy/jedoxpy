@@ -27,12 +27,16 @@ username = admin
 password = admin
 ssl = False
 
+# the dunders __enter__ and __exit__ manage the connection and disconnection
 with JedoxService(host=host, port=port, username=user, password=password, ssl=ssl) as js:
     version = js.connection.get_version()
     print(version)
 
-# or without with:
+# without context (needs to connect and disconnect manually)
 js = JedoxService(host=host, port=port, username=user, password=password, ssl=ssl)
+
+# or using an existing sid:
+js = JedoxService(host=host, port=port, sid="foooobar", ssl=ssl)
 
 js.connect()
 version = js.connection.get_version()
@@ -46,6 +50,7 @@ with JedoxService(host=host, port=port, username=user, password=password, ssl=ss
     database = js.databases.get(name="Demo") # returns a Database object
     cubes = js.databases.get_cubes(database=database) # returns a list of Cube objects
 ```
+
 
 
 
